@@ -1,7 +1,7 @@
 import {Component, OnInit} from 'angular2/core';
 import {NgFor, NgIf} from 'angular2/common';
 
-import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/map';
 
 import {ContainerService} from '../containers/container.service';
 import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
@@ -92,26 +92,28 @@ export class SolutionComponent implements OnInit {
   }
 
   sortById(reversed=false) {
-    let obs = this._containersObservable.do(containers => {
-      containers.sort(compare);
+    let obs = this._containersObservable.map(containers => {
+      let _containers = [...containers];
+      _containers.sort(compare);
       this.sortOrder = 'asc';
 
       if (reversed) {
-        containers.reverse();
+        _containers.reverse();
         this.sortOrder = 'desc';
       }
+
+      return _containers;
     })
     this._unsubscribe();
     this._subscribe(obs);
   }
 
   filterByMemoryUsage() {
+    let obs = this._containersObservable.map(containers => {
+      return containers.filter(x => x.utilization.memory / x.memory > 0.8)
+    }
     this._unsubscribe();
-    this._containersSubscription = this._containersObservable.subscribe(
-      containers => this.containers = containers.filter(
-        x => x.utilization.memory / x.memory > 0.8
-      )
-    );
+    this._subscribe(obs);
     this.filtered = true;
   }
 
