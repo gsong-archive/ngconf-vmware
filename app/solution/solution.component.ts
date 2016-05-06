@@ -1,11 +1,13 @@
 import {Component, OnInit} from 'angular2/core';
 
 import {ContainerService} from '../containers/container.service';
+import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
 
 
 @Component({
     selector: 'my-solution',
     providers: [ContainerService],
+    pipes: [MemoryFormatPipe],
     template: `
     <h1>Your Solution Here</h1>
     <dl *ngIf="container">
@@ -18,9 +20,9 @@ import {ContainerService} from '../containers/container.service';
       <dt>CPU</dt>
       <dd>{{container.utilization.cpu}}</dd>
       <dt>Memory</dt>
-      <dd>{{container.utilization.memory}}</dd>
+      <dd>{{container.utilization.memory | vmwMemoryFormat}}</dd>
       <dt>Disk</dt>
-      <dd>{{container.utilization.disk}}</dd>
+      <dd>{{container.utilization.disk | vmwMemoryFormat}}</dd>
     </dl>
     <button name="start" (click)="start()">Start</button>
     <button name="stop" (click)="stop()">Stop</button>
