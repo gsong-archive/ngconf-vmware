@@ -1,4 +1,5 @@
 import {Component, OnInit} from 'angular2/core';
+import {NgFor} from 'angular2/common';
 
 import {ContainerService} from '../containers/container.service';
 
@@ -6,52 +7,62 @@ import {ContainerService} from '../containers/container.service';
 @Component({
     selector: 'my-solution',
     providers: [ContainerService],
+    directives: [NgFor],
     template: `
     <h1>Your Solution Here</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>State</th>
+          <th>CPU</th>
+          <th>Memory</th>
+          <th>Disk</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="#container of containers">
+          <td>{{container.id}}</td>
+          <td>{{container.name}}</td>
+          <td>{{container.state}}</td>
+          <td>{{container.utilization.cpu}}</td>
+          <td>{{container.utilization.memory}}</td>
+          <td>{{container.utilization.disk}}</td>
+          <td>
+            <button name="start" (click)="start(container)">
+              Start
+            </button>
+          </td>
+          <td>
+            <button name="stop" (click)="stop(container)">
+              Stop
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <dl *ngIf="container">
-      <dt>ID</dt>
-      <dd>{{container.id}}</dd>
-      <dt>Name</dt>
-      <dd>{{container.name}}</dd>
-      <dt>State</dt>
-      <dd>{{container.state}}</dd>
-      <dt>CPU</dt>
-      <dd>{{container.utilization.cpu}}</dd>
-      <dt>Memory</dt>
-      <dd>{{container.utilization.memory}}</dd>
-      <dt>Disk</dt>
-      <dd>{{container.utilization.disk}}</dd>
     </dl>
-    <button name="start" (click)="start()">Start</button>
-    <button name="stop" (click)="stop()">Stop</button>
     `,
 })
 export class SolutionComponent implements OnInit {
-  container;
-  containerSubscription;
+  containers;
 
   constructor(private _containerService: ContainerService) {}
 
   ngOnInit() {
-    this.containerSubscription = this._containerService.getContainer(1)
+    this.containerSubscription = this._containerService.getContainers()
     .subscribe(
-      container => this.container = container;
+      containers => this.containers = containers;
     );
   }
 
-  start() {
-    this.containerSubscription.unsubscribe();
-    this.containerSubscription = this._containerService.startContainer(this.container)
-    .subscribe(
-      container => this.container = container;
-    );
+  start(container) {
+    return this._containerService.startContainer(container).subscribe();
   }
 
-  stop() {
-    this.containerSubscription.unsubscribe();
-    this.containerSubscription = this._containerService.stopContainer(this.container)
-    .subscribe(
-      container => this.container = container;
-    );
+  stop(container) {
+    return this._containerService.stopContainer(container).subscribe();
   }
 }
