@@ -9,54 +9,27 @@ import {SimulatorService} from './simulator.service';
  */
 export interface IContainerService {
     /**
-     * Returns an Observable for all of the containers in the system.
+     * Returns an Observable for the requested containers.
      */
-    getContainers(): Observable<Container[]>;
-    
-    /**
-     * Starts the given container and returns an observable of the mutated container.
-     *
-     * @param container
-     *    The container to start.
-     */
-    startContainer(container: Container): Observable<Container>;
-
-    /**
-     * Stops the given container and returns an observable of the mutated container.
-     *
-     * @param container
-     *    The container to stop.
-     */
-    stopContainer(container: Container): Observable<Container>;    
+    getContainers(ids: number[]): Observable<Container[]>;
+  
 }
 
 @Injectable()
 export class ContainerService implements IContainerService {
 
-    getContainers(): Observable<Container[]> {
-        return Observable.create(observer => {
-            observer.next(this._containers);
-            observer.complete();
-        });
-    }
-    
-    startContainer(container: Container): Observable<Container> {
-        container.state = 'STARTED';
-        return Observable.create(observer => {
-            observer.next(container);
-            observer.complete();
-        });
-    }
+    getContainers(ids: number[]): Observable<Container[]> {
+        let containers = this._containers;
+        if (ids && ids.length) {
+            containers = this._containers.filter(
+                (container: Container) => ids.indexOf(container.id) !== -1);
+        }
 
-    stopContainer(container: Container): Observable<Container> {
-        container.state = 'STOPPED';
-        container.utilization.cpu = 0;
-        container.utilization.memory = 0;
         return Observable.create(observer => {
-            observer.next(container);
+            observer.next(containers);
             observer.complete();
         });
-    }    
+    } 
 
     constructor(generator: GeneratorService, simulator: SimulatorService) {
         this._containers = generator.generateContainers(50); 
@@ -66,4 +39,3 @@ export class ContainerService implements IContainerService {
     private _containers: Container[]
 
 }
-

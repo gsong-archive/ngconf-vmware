@@ -7,6 +7,6 @@ import {GeneratorService} from './containers/generator.service';
     selector: 'my-app',
     template: `<my-solution></my-solution>`,
     directives: [SolutionComponent],
-    providers: [SimulatorService, GeneratorService],
+    providers: [SimulatorService, GeneratorService]
 })
 export class AppComponent{}

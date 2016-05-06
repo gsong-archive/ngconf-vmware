@@ -1,19 +1,14 @@
 import {Pipe, PipeTransform} from 'angular2/core';
 import {Container} from '../containers/container';
 
-/**
- * Pretty formats a memory value given in Bytes to the corresponding value in the
- * 'most appropriate' memory unit. Returns a string with two decimal places and the
- * unit appended.
- */
 @Pipe({name: 'vmwMemoryFormat'})
 export class MemoryFormatPipe implements PipeTransform {
-
+    
     transform(memoryValue: string): string {
         return this._formatBytes(Number.parseInt(memoryValue, 10), 2);
     }
-
-
+    
+    
    /**
     * Units for measuring storage, in magnitude order.
     */
@@ -31,7 +26,7 @@ export class MemoryFormatPipe implements PipeTransform {
     *    Max number of decimals to display.
     *
     * @returns {string}
-    *    Pretty formatted size string.
+    *    Pretty formated size string.
     */
    private _formatBytes(bytes, decimals) {
       if(bytes == 0) return '0 Bytes';
@@ -56,6 +51,6 @@ export class MemoryFormatPipe implements PipeTransform {
       }
       var k = 1024;
       return Math.floor(Math.log(bytes) / Math.log(k));
-   }
-
+   }    
+    
 }
