@@ -14,6 +14,13 @@ import {VmService} from '../vms/vm.service';
     directives: [ContainersListComponent],
     template: `
     <h1>Your Solution Here</h1>
+    <dl *ngIf="vm">
+      <dt>Name</dt>
+      <dd>{{vm.name}}</dd>
+      <dt>IP Address</dt>
+      <dd>{{vm.ip}}</dd>
+    </dl>
+    <img [src]="vm?.screenshot">
     <vmw-containers-list [containers]="containers"></vmw-containers-list>
     `,
 })
@@ -33,7 +40,8 @@ export class SolutionComponent implements OnInit {
   }
 
   getContainers(vm) {
-    this._containerService.getContainers(vm.containers).subscribe(
+    this._containerService.getContainers(vm.containers)
+    .subscribe(
       containers => this.containers = containers
     )
   }
