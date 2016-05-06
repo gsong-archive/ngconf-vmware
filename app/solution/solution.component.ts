@@ -12,12 +12,18 @@ import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
     pipes: [MemoryFormatPipe],
     template: `
     <h1>Your Solution Here</h1>
+    <button *ngIf="!filtered" name="filter" (click)="filterByMemoryUsage()">
+      Show Containers Using > 80% of Memory
+    </button>
+    <button *ngIf="filtered" name="filter" (click)="unfilter()">
+      Show All
+    </button>
     <table>
       <thead>
         <tr>
           <th>
-            <a *ngIf="sortOrder === 'asc'" (click)="sortId(true)">ID ↓</a>
-            <a *ngIf="sortOrder === 'desc'" (click)="sortId()">ID ↑</a>
+            <a *ngIf="sortOrder === 'asc'" (click)="sortById(true)">ID ↓</a>
+            <a *ngIf="sortOrder === 'desc'" (click)="sortById()">ID ↑</a>
           </th>
           <th>Name</th>
           <th>State</th>
@@ -53,15 +59,21 @@ import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
 })
 export class SolutionComponent implements OnInit {
   containers;
+  containersSubscription;
+  filtered = false;
   sortOrder = 'asc';
 
   constructor(private _containerService: ContainerService) {}
 
-  ngOnInit() {
-    this.containerSubscription = this._containerService.getContainers()
+  _subscribe() {
+    this.containersSubscription = this._containerService.getContainers()
     .subscribe(
       containers => this.containers = containers;
     );
+  }
+
+  ngOnInit() {
+    this._subscribe();
   }
 
   start(container) {
@@ -72,7 +84,7 @@ export class SolutionComponent implements OnInit {
     return this._containerService.stopContainer(container).subscribe();
   }
 
-  sortId(reversed=false) {
+  sortById(reversed=false) {
     let _containers = [...this.containers];
     _containers.sort(compare);
     this.sortOrder = 'asc';
@@ -83,6 +95,23 @@ export class SolutionComponent implements OnInit {
     }
 
     this.containers = _containers;
+  }
+
+  filterByMemoryUsage() {
+    this.containersSubscription.unsubscribe();
+    this.containersSubscription = this._containerService.getContainers()
+    .subscribe(
+      containers => this.containers = containers.filter(
+        x => x.utilization.memory / x.memory > 0.8
+      )
+    );
+    this.filtered = true;
+  }
+
+  unfilter() {
+    this.containersSubscription.unsubscribe();
+    this._subscribe();
+    this.filtered = false;
   }
 }
 
