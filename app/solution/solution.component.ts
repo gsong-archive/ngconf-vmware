@@ -1,7 +1,40 @@
-import {Component} from 'angular2/core';
+import {Component, OnInit} from 'angular2/core';
+import {NgFor, NgIf} from 'angular2/common';
+
+import 'rxjs/add/operator/map';
+
+import {ContainerService} from '../containers/container.service';
+import {ContainersListComponent} from '../containers/containers.component';
+import {VmService} from '../vms/vm.service';
+
 
 @Component({
     selector: 'my-solution',
-    template: `<h1>Your Solution Here</h1>`,
+    providers: [ContainerService, VmService],
+    directives: [ContainersListComponent],
+    template: `
+    <h1>Your Solution Here</h1>
+    <vmw-containers-list [containers]="containers"></vmw-containers-list>
+    `,
 })
-export class SolutionComponent {}
+export class SolutionComponent implements OnInit {
+  containers;
+  vm;
+
+  constructor(
+    private _containerService: ContainerService,
+    private _vmService: VmService
+  ) {}
+
+  ngOnInit() {
+    let vmObs = this._vmService.getVm(1);
+    vmObs.subscribe(vm => this.vm = vm);
+    vmObs.subscribe(vm => this.getContainers(vm));
+  }
+
+  getContainers(vm) {
+    this._containerService.getContainers(vm.containers).subscribe(
+      containers => this.containers = containers
+    )
+  }
+}
