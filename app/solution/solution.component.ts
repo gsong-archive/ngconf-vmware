@@ -2,6 +2,7 @@ import {Component, OnInit} from 'angular2/core';
 
 import {ContainerService} from '../containers/container.service';
 
+
 @Component({
     selector: 'my-solution',
     providers: [ContainerService],
