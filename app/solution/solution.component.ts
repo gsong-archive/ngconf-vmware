@@ -1,6 +1,8 @@
 import {Component, OnInit} from 'angular2/core';
 import {NgFor, NgIf} from 'angular2/common';
 
+import 'rxjs/add/operator/do';
+
 import {ContainerService} from '../containers/container.service';
 import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
 
@@ -58,22 +60,27 @@ import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
     `,
 })
 export class SolutionComponent implements OnInit {
+  _containersObservable;
+  _containersSubscription;
   containers;
-  containersSubscription;
   filtered = false;
   sortOrder = 'asc';
 
   constructor(private _containerService: ContainerService) {}
 
-  _subscribe() {
-    this.containersSubscription = this._containerService.getContainers()
-    .subscribe(
+  ngOnInit() {
+    this._containersObservable = this._containerService.getContainers();
+    this._subscribe(this._containersObservable);
+  }
+
+  _subscribe(obs) {
+    this._containersSubscription = obs.subscribe(
       containers => this.containers = containers;
     );
   }
 
-  ngOnInit() {
-    this._subscribe();
+  _unsubscribe() {
+    this._containersSubscription.unsubscribe();
   }
 
   start(container) {
@@ -85,22 +92,22 @@ export class SolutionComponent implements OnInit {
   }
 
   sortById(reversed=false) {
-    let _containers = [...this.containers];
-    _containers.sort(compare);
-    this.sortOrder = 'asc';
+    let obs = this._containersObservable.do(containers => {
+      containers.sort(compare);
+      this.sortOrder = 'asc';
 
-    if (reversed) {
-      _containers.reverse();
-      this.sortOrder = 'desc';
-    }
-
-    this.containers = _containers;
+      if (reversed) {
+        containers.reverse();
+        this.sortOrder = 'desc';
+      }
+    })
+    this._unsubscribe();
+    this._subscribe(obs);
   }
 
   filterByMemoryUsage() {
-    this.containersSubscription.unsubscribe();
-    this.containersSubscription = this._containerService.getContainers()
-    .subscribe(
+    this._unsubscribe();
+    this._containersSubscription = this._containersObservable.subscribe(
       containers => this.containers = containers.filter(
         x => x.utilization.memory / x.memory > 0.8
       )
@@ -109,8 +116,8 @@ export class SolutionComponent implements OnInit {
   }
 
   unfilter() {
-    this.containersSubscription.unsubscribe();
-    this._subscribe();
+    this._unsubscribe();
+    this._subscribe(this._containersObservable);
     this.filtered = false;
   }
 }
