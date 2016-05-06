@@ -1,19 +1,24 @@
 import {Component, OnInit} from 'angular2/core';
-import {NgFor} from 'angular2/common';
+import {NgFor, NgIf} from 'angular2/common';
 
 import {ContainerService} from '../containers/container.service';
+import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
 
 
 @Component({
     selector: 'my-solution',
     providers: [ContainerService],
-    directives: [NgFor],
+    directives: [NgFor, NgIf],
+    pipes: [MemoryFormatPipe],
     template: `
     <h1>Your Solution Here</h1>
     <table>
       <thead>
         <tr>
-          <th>ID</th>
+          <th>
+            <a *ngIf="sortOrder === 'asc'" (click)="sortId(true)">ID ↓</a>
+            <a *ngIf="sortOrder === 'desc'" (click)="sortId()">ID ↑</a>
+          </th>
           <th>Name</th>
           <th>State</th>
           <th>CPU</th>
@@ -27,8 +32,8 @@ import {ContainerService} from '../containers/container.service';
           <td>{{container.name}}</td>
           <td>{{container.state}}</td>
           <td>{{container.utilization.cpu}}</td>
-          <td>{{container.utilization.memory}}</td>
-          <td>{{container.utilization.disk}}</td>
+          <td>{{container.utilization.memory | vmwMemoryFormat}}</td>
+          <td>{{container.utilization.disk | vmwMemoryFormat}}</td>
           <td>
             <button name="start" (click)="start(container)">
               Start
@@ -48,6 +53,7 @@ import {ContainerService} from '../containers/container.service';
 })
 export class SolutionComponent implements OnInit {
   containers;
+  sortOrder = 'asc';
 
   constructor(private _containerService: ContainerService) {}
 
@@ -65,4 +71,23 @@ export class SolutionComponent implements OnInit {
   stop(container) {
     return this._containerService.stopContainer(container).subscribe();
   }
+
+  sortId(reversed=false) {
+    let _containers = [...this.containers];
+    _containers.sort(compare);
+    this.sortOrder = 'asc';
+
+    if (reversed) {
+      _containers.reverse();
+      this.sortOrder = 'desc';
+    }
+
+    this.containers = _containers;
+  }
+}
+
+function compare(a, b) {
+  if (a.id < b.id) return -1;
+  if (a.id > b.id) return 1;
+  return 0;
 }
