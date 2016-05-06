@@ -19,7 +19,7 @@ export class Container {
     state: string;
 
     /**
-     * Maximum accessible RAM for the container in Bytes.
+     * Total amount of RAM allocated, in Bytes.
      */
     memory: number;
 
