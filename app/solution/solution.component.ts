@@ -30,30 +30,31 @@ import {MemoryFormatPipe} from '../util/memoryFormat.pipe';
 })
 export class SolutionComponent implements OnInit {
   container;
-  containerSubscription;
+  _containerSubscription;
 
   constructor(private _containerService: ContainerService) {}
 
   ngOnInit() {
-    this.containerSubscription = this._containerService.getContainer(1)
-    .subscribe(
+    this._subscribe(this._containerService.getContainer(1));
+  }
+
+  _subscribe(obs) {
+    this._containerSubscription = obs.subscribe(
       container => this.container = container;
     );
+  }
+
+  _unsubscribe() {
+    this._containerSubscription.unsubscribe();
   }
 
   start() {
-    this.containerSubscription.unsubscribe();
-    this.containerSubscription = this._containerService.startContainer(this.container)
-    .subscribe(
-      container => this.container = container;
-    );
+    this._unsubscribe();
+    this._subscribe(this._containerService.startContainer(this.container));
   }
 
   stop() {
-    this.containerSubscription.unsubscribe();
-    this.containerSubscription = this._containerService.stopContainer(this.container)
-    .subscribe(
-      container => this.container = container;
-    );
+    this._unsubscribe();
+    this._subscribe(this._containerService.stopContainer(this.container));
   }
 }
