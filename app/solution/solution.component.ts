@@ -41,6 +41,9 @@ export class SolutionComponent implements OnInit {
 
   getContainers(vm) {
     this._containerService.getContainers(vm.containers)
+    .map(containers => containers.filter(
+      container => container.state === 'STARTED'
+    ))
     .subscribe(
       containers => this.containers = containers
     )
